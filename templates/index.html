@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50 оттенков гипотез</title>
+    <link href="static/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/style.css" rel="stylesheet">
+</head>
+<body>
+    <script src="static/bootstrap/dist/js/bootstrap.min.js"></script>
+    <div class="gray-box">
+        <div class="nav-but">
+            <button id="btn_block1" class="toggleButton" onclick="showContent('block1')" data-target="block1">Загрузить файл</button>
+            <button id="btn_block2" class="toggleButton" onclick="showContent('block2')" data-target="block2">Общие комментарии</button>
+            <button id="btn_block3" class="toggleButton" onclick="showContent('block3')" data-target="block3">Разделенные комментарии</button>
+        </div>
+        <div class="content-box">
+            <div class="block" id="block1">
+                <div class="load-box">
+                    <form id="uploadForm">
+                        <label class="slice">
+                            <input class="form-control" type="file" id="fileInput" accept="upload/*" required>
+                        </label>
+                        <button class="btn btn-outline-dark" type="submit">Загрузить</button>
+                    </form>
+                </div>
+            </div>
+            <div class="block" id="block2"></div>
+            <div class="block" id="block3"></div>
+        </div>
+    </div>
+    <div id="myModal" class="modal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Разметка времени</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+               
+    <script>
+
+        const connectAPI = "http://127.0.0.1:8000";
+        
+        function showContent(targetId) {
+            // Получаем все блоки
+            var blocks = document.querySelectorAll('.block');
+            
+            // Скрываем все блоки
+            blocks.forEach(function(block) {
+            block.style.display = 'none';
+            });
+            
+            // Показываем только целевой блок
+            var targetBlock = document.getElementById(targetId);
+            targetBlock.style.display = 'block';
+
+            if (targetId == 'block2') {
+                fetch(connectAPI+"/once-data", {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    var host = document.getElementById('block2');
+
+                    var block = document.createElement('div');
+                    block.className = 'img_block';
+
+                    var img = document.createElement('img');
+                    img.className = 'img_img';
+                    img.src = data['path'];
+
+                    var pred = document.createElement('p');
+                    pred.className = 'prediction';
+                    pred.textContent = data["data"];
+
+                    var buttons = createButtons();
+
+                    block.appendChild(img);
+                    block.appendChild(buttons);
+                    block.appendChild(pred);
+
+                    host.appendChild(block);
+                })
+                .catch(error => {
+                    console.error('Ошибка при отправке запроса:', error);
+                });
+            }
+            if (targetId == 'block3') {
+                fetch(connectAPI+"/numeric-data", {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    var host = document.getElementById('block3');
+
+                    data.forEach(function(predict) {
+
+                        var block = document.createElement('div');
+                        block.className = 'img_block';
+
+                        var img = document.createElement('img');
+                        img.className = 'img_img';
+                        img.src = predict['path'];
+
+                        var pred = document.createElement('p');
+                        pred.className = 'prediction';
+                        pred.textContent = predict["data"];
+
+                        buttons = createButtons(predict['ID'])
+
+                        block.appendChild(img);
+                        block.appendChild(buttons);
+                        block.appendChild(pred);
+
+                        host.appendChild(block);
+
+                    });
+                });
+            }
+        }
+
+        function createButtons(id = null) {
+            const groupefewfs = [
+                "Вежливость", 
+                "Технические проблемы", 
+                "Хорошее объяснение материала", 
+                "Плохое объяснение материала и сложность", 
+                "Помощь и понимание", 
+                "Реклама и спам", 
+                "Оскорбления и конфликты", 
+                "Опоздание", 
+                "Выполнение задания"
+            ];
+            const color_sheet = {
+                "Вежливость": '#0000CD',
+                "Технические проблемы": '#FF0000',
+                "Хорошее объяснение материала": '#000000',
+                "Плохое объяснение материала и сложность": '#FFDAB9',
+                "Помощь и понимание": '#FF69B4',
+                "Реклама и спам": '#006400',
+                "Оскорбления и конфликты": '#808080',
+                "Опоздание": '#FFFF00',
+                "Выполнение задания": '#800000',
+            }
+
+            var main = document.createElement('div');
+            main.className = 'button_block';
+
+            groupefewfs.forEach(function(check) {
+                var but = document.createElement('input');
+                but.type = 'button';
+                but.value = check;
+                if (id == null) {
+                    var hrefValue = '/filter/?need_class=' + encodeURIComponent(check);
+                } else {
+                    var hrefValue = '/filter/?need_class=' + encodeURIComponent(check) + '&id=' + encodeURIComponent(id);
+                }
+                but.onclick = function() {
+                    // window.location.href = hrefValue; // Перенаправляем на URL при клике на кнопку
+                    // Показываем модальное окно при клике на кнопку
+
+                    fetch(connectAPI+hrefValue)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        var modal = document.getElementById("myModal");
+                        modal.style.display = "block"; // Показываем модальное окно
+
+                        var modalBody = document.querySelector(".modal-body");
+                        modalBody.innerHTML = ""; // Очищаем содержимое тела модального окна
+
+                        // Закрываем модальное окно при клике за его пределами
+                        window.onclick = function(event) {
+                            var modal = document.getElementById("myModal");
+                            if (event.target == modal) {
+                                modal.style.display = "none"; // Закрываем модальное окно
+                            }
+                        };
+
+                        // Определяем кнопку "Close" в модальном окне
+                        var closeButton = document.querySelector(".btn-close");
+                        closeButton.onclick = function() {
+                            var modal = document.getElementById("myModal");
+                            modal.style.display = "none"; // Закрываем модальное окно
+                        };
+
+                        // Закрываем модальное окно при клике за его пределами
+                        window.onclick = function(event) {
+                            var modal = document.getElementById("myModal");
+                            if (event.target == modal) {
+                                modal.style.display = "none"; // Закрываем модальное окно
+                            }
+                        };
+
+                        var table = document.createElement("table");
+                        table.className = "table";
+
+                            // var tr = document.createElement("tr");
+                            // var td1 = document.createElement("td");
+                            // var td2 = document.createElement("td");
+                            // td1.textContent = data[0]['Дата сообщения'];
+                            // td2.textContent = data[0]['Текст сообщения'];
+                            // tr.appendChild(td1);
+                            // tr.appendChild(td2);
+                            // table.appendChild(tr);
+
+                        // var test = [{"Unnamed: 0.1":0,"Unnamed: 0":0,"ID урока":307751.0,"Дата старта урока":"2024-03-06 10:02:38","Текст сообщения":"winningConditions = [\n    [0, 1, 2],\n    [3, 4, 5],\n    [6, 7, 8],\n    [0, 3, 6],\n    [1, 4, 7],\n    [2, 5, 8],\n    [0, 4, 8],\n    [2, 4, 6]\n]","Дата сообщения":"2024-03-06 10:53:03","len_text":142,"Время от начала урока":50.4166666667,"Вежливость":0,"Технические проблемы":0,"Хорошее объяснение материала":1,"Плохое объяснение материала и сложность":0,"Помощь и понимание":0,"Реклама и спам":0,"Оскорбления и конфликты":0,"Опоздание":0,"Выполнение задания":0}]
+
+                        data.forEach(function(row) {
+                            var tr = document.createElement("tr");
+                            var td1 = document.createElement("td");
+                            var td2 = document.createElement("td");
+                            td1.textContent = row['Дата сообщения'];
+                            td2.textContent = row['Текст сообщения'];
+                            tr.appendChild(td1);
+                            tr.appendChild(td2);
+                            table.appendChild(tr);
+                        });
+
+
+                        // var tbody = document.createElement("tbody");
+                        // data.forEach(function(row) {
+                        //     var tr = document.createElement("tr");
+                        //     for (var key in row) {
+                        //         var td = document.createElement("td");
+                        //         td.textContent = row[key];
+                        //         tr.appendChild(td);
+                        //     }
+                        //     tbody.appendChild(tr);
+                        // });
+
+                        modalBody.appendChild(table);
+                    });
+                };
+                but.style.backgroundColor = color_sheet[check];
+                but.style.border = "none";
+                but.style.color = '#fff';
+
+                main.appendChild(but);
+            });
+
+            return main;
+        }
+        
+        function redirectToNext() {
+            window.location.href = "/next/";
+        }
+        
+        function showDiv(id) {
+            // Скрываем все tab-pane
+            var tabPanes = document.getElementsByClassName('tab-pane');
+            for (var i = 0; i < tabPanes.length; i++) {
+                tabPanes[i].classList.remove('active');
+            }
+            // Отображаем нужный tab-pane
+            document.getElementById(id).classList.add('active');
+        }
+
+        
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартное поведение формы
+        
+        var fileInput = document.getElementById('fileInput');
+        var file = fileInput.files[0]; // Получаем выбранный файл
+        
+        var formData = new FormData(); // Создаем объект FormData для отправки данных
+        
+        formData.append('file', file); // Добавляем файл в FormData с ключом 'file'
+        
+        // Отправляем запрос POST на ваш API
+        fetch(connectAPI+"/upload", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Ответ от сервера:', data);
+            if (data.success) {
+                document.getElementById('myModal').style.display = "block";
+                // Очищаем форму
+                document.getElementById('uploadForm').reset();
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при отправке запроса:', error);
+        });
+        });
+
+        // document.getElementById('btn_block2').addEventListener('submit', function(event) {
+        //     event.preventDefault();
+
+        //     // Отправляем запрос POST на ваш API
+        //     fetch(endpoint, {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+                
+        //         var host = document.getElementById('block2');
+
+        //         var block = document.createElement('div');
+        //         block.className = 'img_block';
+
+        //         var img = document.createElement('img');
+        //         img.className = 'img_img';
+        //         img.src = data['path'];
+
+        //         var pred = document.createElement('p');
+        //         pred.className = 'prediction';
+        //         pred.textContent = data['data'];
+
+        //         block.appendChild(img);
+        //         block.appendChild(pred);
+
+        //         host.appendChild(block);
+        //     })
+        //     .catch(error => {
+        //         console.error('Ошибка при отправке запроса:', error);
+        //     });
+        // });
+
+    </script>
+</body>
+</html>

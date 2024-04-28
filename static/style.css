@@ -1,0 +1,65 @@
+/* Темный фон */
+body {
+    background-color: #DCDCDC; /* черный цвет фона */
+}
+
+/* Черная область на первом плане с желтой окантовкой */
+.nav-but {
+    width: 100%;
+    height: 40px;
+}
+.toggleButton {
+    background-color: #808080;
+    border: 0px solid #ccc;
+    color: #ccc;
+    margin: 4px;
+}
+.block {
+    display: none;
+    width: 100%;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+.img_block {
+    width: 40%;
+    color: #eee;
+}
+.content-box {
+    width: 100%;
+}
+.gray-box {
+    background-color: #808080;
+    border: 0.5px solid #ccc;
+    border-radius: 10px;
+    color: #929292;
+    width: 80%;
+    margin: 20px auto 0;
+}
+.load-box {
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    padding: 4px;
+    height: 100px;
+    width: 100%;
+}
+.content-box {
+    display: flex; /* Используем flexbox */
+    justify-content: center; /* Центрируем элементы по горизонтали */
+    flex-wrap: wrap; /* Разрешаем элементам переноситься на следующую строку */
+    width: 100%;
+}
+.image-box {
+    background-color: #1d1d1d;
+    border: 0.5px solid #ffcc00;
+    border-radius: 10px;
+    margin: 20px 10px;
+    width: 30%;
+}
+.slice {
+    width: 300px;
+}
+.img {
+    border-radius: 8px 8px 0 0;
+    width: 100%;
+}
